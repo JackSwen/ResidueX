@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unordered_map>
+#include <utility>
 #include <cctype>
 #include <algorithm>
 #include <fstream>
@@ -46,12 +47,15 @@ string tothreelettercode(char residue){
     residue = toupper(residue);
     auto it = protein_map.find(residue);
     if (it != protein_map.end()) {
-        return it->second.first;
+        string code = it->second.first;
+        for (char& c : code) c = toupper(c);
+        return code;
     }
     return "???";
 }
 
 string tofullnamcode(char residue){
+    residue = toupper(residue);
     auto it = protein_map.find(residue);
     if (it != protein_map.end()) {
         return it->second.second;
@@ -62,17 +66,22 @@ string tofullnamcode(char residue){
 string outputsequence(const string& sequence, bool fullname){
     string result;
     for (char residue : sequence) {
+        if (!result.empty()) {
+            result += " ";
+        }
         if (fullname) {
-            result += tofullnamcode(residue) + " ";
+            result += tofullnamcode(residue);
         } else {
-            result += tothreelettercode(residue) + " ";
-        } 
+            result += tothreelettercode(residue);
+        }
     }
     return result;
 }
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        cerr << "Usage: " << argv[0] << "the file " << endl;
+    if (argc < 2 || string(argv[1]) == "--help" || string(argv[1]) == "-h") {
+        cerr << "Usage: " << argv[0] << " <file> [--fullnames]" << endl;
+        cerr << "  <file>        path to a file with one sequence per line (1-letter codes)" << endl;
+        cerr << "  --fullnames    output full amino acid names instead of 3-letter codes" << endl;
         return 1;
     }
 
